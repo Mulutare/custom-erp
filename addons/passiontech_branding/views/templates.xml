@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template
+        id="passiontech_login_branding"
+        inherit_id="web.login_layout"
+        name="PassionTech Login Branding">
+
+        <xpath
+            expr="//div[contains(@t-attf-class, 'o_database_list')]"
+            position="attributes">
+            <attribute name="style">max-width: 420px;</attribute>
+        </xpath>
+
+        <xpath
+            expr="//div[hasclass('text-center') and hasclass('pb-3') and hasclass('border-bottom') and hasclass('mb-4')]/img"
+            position="replace">
+            <img
+                src="/passiontech_branding/static/src/img/passiontech-logo.png"
+                alt="Passion Technology"
+                style="max-height: 180px; max-width: 100%; width: auto;"/>
+        </xpath>
+
+    </template>
+</odoo>

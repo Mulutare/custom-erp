@@ -1,0 +1,28 @@
+# Local secrets
+.env
+config/odoo.conf
+*.secret
+
+# Database and backups
+backups/
+*.sql
+*.dump
+*.backup
+*.zip
+
+# Odoo runtime data
+data/
+filestore/
+sessions/
+logs/
+*.log
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+
+# Editors and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
