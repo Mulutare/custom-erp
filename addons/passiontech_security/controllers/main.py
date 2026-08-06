@@ -30,26 +30,9 @@ class PassionTechHome(Home):
         if has_inventory and not has_sales and not has_finance:
             return "/odoo/inventory"
 
-        # Finance-only, multi-role, and standard users return to the
-        # normal web client, which resolves their permitted applications.
         return "/odoo"
 
-    @http.route(
-        [
-            "/odoo/apps",
-            "/odoo/apps/<path:subpath>",
-        ],
-        type="http",
-        auth="none",
-        readonly=Home._web_client_readonly,
-    )
-    def passiontech_apps(
-        self,
-        subpath=None,
-        s_action=None,
-        **kw,
-    ):
-        """Restrict the Apps catalog to PassionTech system administrators."""
+    def _passiontech_prepare_user(self):
         ensure_db()
 
         if not request.session.uid:
@@ -77,10 +60,112 @@ class PassionTechHome(Home):
             )
 
         request.update_env(user=request.session.uid)
+        return None
 
-        if not request.env.user.has_group(
+    def _passiontech_is_system_administrator(self):
+        return request.env.user.has_group(
             "passiontech_security."
             "group_system_administrator"
+        )
+
+    @http.route(
+        [
+            "/odoo/apps",
+            "/odoo/apps/<path:subpath>",
+        ],
+        type="http",
+        auth="none",
+        readonly=Home._web_client_readonly,
+    )
+    def passiontech_apps(
+        self,
+        subpath=None,
+        s_action=None,
+        **kw,
+    ):
+        response = self._passiontech_prepare_user()
+
+        if response:
+            return response
+
+        if not self._passiontech_is_system_administrator():
+            return request.redirect(
+                self._passiontech_landing_url(),
+                303,
+            )
+
+        return super().web_client(
+            s_action=s_action,
+            subpath=subpath,
+            **kw,
+        )
+
+    @http.route(
+        [
+            "/odoo/sales",
+            "/odoo/sales/<path:subpath>",
+        ],
+        type="http",
+        auth="none",
+        readonly=Home._web_client_readonly,
+    )
+    def passiontech_sales(
+        self,
+        subpath=None,
+        s_action=None,
+        **kw,
+    ):
+        response = self._passiontech_prepare_user()
+
+        if response:
+            return response
+
+        has_sales_access = request.env.user.has_group(
+            "passiontech_security.group_sales_officer"
+        )
+
+        if (
+            not has_sales_access
+            and not self._passiontech_is_system_administrator()
+        ):
+            return request.redirect(
+                self._passiontech_landing_url(),
+                303,
+            )
+
+        return super().web_client(
+            s_action=s_action,
+            subpath=subpath,
+            **kw,
+        )
+
+    @http.route(
+        [
+            "/odoo/inventory",
+            "/odoo/inventory/<path:subpath>",
+        ],
+        type="http",
+        auth="none",
+        readonly=Home._web_client_readonly,
+    )
+    def passiontech_inventory(
+        self,
+        subpath=None,
+        s_action=None,
+        **kw,
+    ):
+        response = self._passiontech_prepare_user()
+
+        if response:
+            return response
+
+        has_inventory_access = request.env.user.has_group(
+            "passiontech_security.group_inventory_officer"
+        )
+
+        if (
+            not has_inventory_access
+            and not self._passiontech_is_system_administrator()
         ):
             return request.redirect(
                 self._passiontech_landing_url(),
