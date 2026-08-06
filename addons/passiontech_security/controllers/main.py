@@ -11,6 +11,29 @@ from odoo.addons.web.controllers.utils import (
 
 class PassionTechHome(Home):
 
+    def _passiontech_landing_url(self):
+        user = request.env.user
+
+        has_sales = user.has_group(
+            "passiontech_security.group_sales_officer"
+        )
+        has_inventory = user.has_group(
+            "passiontech_security.group_inventory_officer"
+        )
+        has_finance = user.has_group(
+            "passiontech_security.group_finance_officer"
+        )
+
+        if has_sales and not has_inventory and not has_finance:
+            return "/odoo/sales"
+
+        if has_inventory and not has_sales and not has_finance:
+            return "/odoo/inventory"
+
+        # Finance-only, multi-role, and standard users return to the
+        # normal web client, which resolves their permitted applications.
+        return "/odoo"
+
     @http.route(
         [
             "/odoo/apps",
@@ -60,7 +83,7 @@ class PassionTechHome(Home):
             "group_system_administrator"
         ):
             return request.redirect(
-                "/odoo/sales",
+                self._passiontech_landing_url(),
                 303,
             )
 
