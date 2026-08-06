@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sale_advance_payment_inv_finance_officer,Finance Officer: Sales Invoice Wizard,sale.model_sale_advance_payment_inv,passiontech_security.group_finance_officer,1,1,1,0

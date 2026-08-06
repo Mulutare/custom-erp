@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_finance_invoice_restriction" model="ir.ui.view">
+        <field name="name">sale.order.form.finance.invoice.restriction</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@id='create_invoice']" position="attributes">
+                <attribute name="groups">passiontech_security.group_finance_officer,passiontech_security.group_system_administrator</attribute>
+            </xpath>
+            <xpath expr="//button[@id='create_invoice_percentage']" position="attributes">
+                <attribute name="groups">passiontech_security.group_finance_officer,passiontech_security.group_system_administrator</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_posting_restriction" model="ir.ui.view">
+        <field name="name">account.move.form.posting.restriction</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_post']" position="attributes">
+                <attribute name="groups">passiontech_security.group_finance_manager,passiontech_security.group_system_administrator</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
