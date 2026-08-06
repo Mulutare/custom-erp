@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Company users may join only through administrator invitations. -->
+    <function
+        model="ir.config_parameter"
+        name="set_param">
+
+        <value eval="'auth_signup.invitation_scope'"/>
+        <value eval="'b2b'"/>
+    </function>
+
+    <!-- Keep forgotten-password recovery available. -->
+    <function
+        model="ir.config_parameter"
+        name="set_param">
+
+        <value eval="'auth_signup.reset_password'"/>
+        <value eval="'True'"/>
+    </function>
+
+</odoo>

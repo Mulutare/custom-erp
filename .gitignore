@@ -11,10 +11,10 @@ backups/
 *.zip
 
 # Odoo runtime data
-data/
-filestore/
-sessions/
-logs/
+/data/
+/filestore/
+/sessions/
+/logs/
 *.log
 
 # Python-generated files
