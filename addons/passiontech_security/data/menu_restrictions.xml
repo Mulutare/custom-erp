@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function
+        model="res.groups"
+        name="apply_passiontech_menu_policy"
+    />
+</odoo>
