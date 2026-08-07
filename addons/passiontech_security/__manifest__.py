@@ -1,6 +1,6 @@
 {
     "name": "PassionTech Security",
-    "version": "19.0.1.10.0",
+    "version": "19.0.1.12.0",
     "summary": "Passion Technology company roles and access control",
     "category": "PassionTech",
     "author": "Passion Technology",
@@ -15,6 +15,7 @@
         "security/ir.model.access.csv",
         "views/sale_order_views.xml",
         "views/account_move_views.xml",
+        "views/finance_menu_views.xml",
         "data/default_user_policy.xml",
         "data/menu_restrictions.xml",
         "data/security_settings.xml"

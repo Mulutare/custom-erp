@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record
+        id="action_finance_orders_to_invoice"
+        model="ir.actions.act_window"
+    >
+        <field name="name">Orders to Invoice</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list</field>
+        <field
+            name="view_id"
+            ref="sale.view_order_tree"
+        />
+        <field name="domain">
+            [('invoice_status', '=', 'to invoice')]
+        </field>
+        <field name="context">
+            {'create': False}
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_finance_orders_to_invoice"
+        name="Sales Orders to Invoice"
+        parent="account.menu_finance_receivables"
+        action="action_finance_orders_to_invoice"
+        sequence="0"
+        groups="passiontech_security.group_finance_officer,passiontech_security.group_system_administrator"
+    />
+
+</odoo>

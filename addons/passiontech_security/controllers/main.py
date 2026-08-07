@@ -30,6 +30,9 @@ class PassionTechHome(Home):
         if has_inventory and not has_sales and not has_finance:
             return "/odoo/inventory"
 
+        if has_finance and not has_sales and not has_inventory:
+            return "/odoo/customer-invoices"
+
         return "/odoo"
 
     def _passiontech_prepare_user(self):
@@ -66,6 +69,35 @@ class PassionTechHome(Home):
         return request.env.user.has_group(
             "passiontech_security."
             "group_system_administrator"
+        )
+
+    @http.route(
+        "/odoo",
+        type="http",
+        auth="none",
+        readonly=Home._web_client_readonly,
+    )
+    def passiontech_root(
+        self,
+        s_action=None,
+        **kw,
+    ):
+        response = self._passiontech_prepare_user()
+
+        if response:
+            return response
+
+        landing_url = self._passiontech_landing_url()
+
+        if landing_url != "/odoo":
+            return request.redirect(
+                landing_url,
+                303,
+            )
+
+        return super().web_client(
+            s_action=s_action,
+            **kw,
         )
 
     @http.route(
