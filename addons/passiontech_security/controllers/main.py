@@ -173,6 +173,45 @@ class PassionTechHome(Home):
 
     @http.route(
         [
+            "/odoo/crm",
+            "/odoo/crm/<path:subpath>",
+        ],
+        type="http",
+        auth="none",
+        readonly=Home._web_client_readonly,
+    )
+    def passiontech_crm(
+        self,
+        subpath=None,
+        s_action=None,
+        **kw,
+    ):
+        response = self._passiontech_prepare_user()
+
+        if response:
+            return response
+
+        has_crm_access = request.env.user.has_group(
+            "passiontech_security.group_sales_manager"
+        )
+
+        if (
+            not has_crm_access
+            and not self._passiontech_is_system_administrator()
+        ):
+            return request.redirect(
+                self._passiontech_landing_url(),
+                303,
+            )
+
+        return super().web_client(
+            s_action=s_action,
+            subpath=subpath,
+            **kw,
+        )
+
+    @http.route(
+        [
             "/odoo/customer-invoices",
             "/odoo/customer-invoices/<path:subpath>",
         ],
