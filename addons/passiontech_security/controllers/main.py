@@ -173,6 +173,38 @@ class PassionTechHome(Home):
 
     @http.route(
         [
+            "/odoo/purchase",
+            "/odoo/purchase/<path:subpath>",
+        ],
+        type="http",
+        auth="none",
+        readonly=Home._web_client_readonly,
+    )
+    def passiontech_purchase(
+        self,
+        subpath=None,
+        s_action=None,
+        **kw,
+    ):
+        response = self._passiontech_prepare_user()
+
+        if response:
+            return response
+
+        if not self._passiontech_is_system_administrator():
+            return request.redirect(
+                self._passiontech_landing_url(),
+                303,
+            )
+
+        return super().web_client(
+            s_action=s_action,
+            subpath=subpath,
+            **kw,
+        )
+
+    @http.route(
+        [
             "/odoo/project",
             "/odoo/project/<path:subpath>",
         ],
