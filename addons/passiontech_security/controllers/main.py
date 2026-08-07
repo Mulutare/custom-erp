@@ -171,37 +171,15 @@ class PassionTechHome(Home):
             **kw,
         )
 
-    @http.route(
-        [
-            "/odoo/attendances",
-            "/odoo/attendances/<path:subpath>",
-        ],
-        type="http",
-        auth="none",
-        readonly=Home._web_client_readonly,
-    )
-    def passiontech_attendances(
-        self,
-        subpath=None,
-        s_action=None,
-        **kw,
-    ):
-        response = self._passiontech_prepare_user()
-
-        if response:
-            return response
-
-        if not self._passiontech_is_system_administrator():
-            return request.redirect(
-                self._passiontech_landing_url(),
-                303,
-            )
-
-        return super().web_client(
-            s_action=s_action,
-            subpath=subpath,
-            **kw,
-        )
+    # PassionTech employee self-service policy:
+    # Every internal employee must have access to Attendance for their own
+    # clock-in/clock-out and attendance history, plus HR self-service for
+    # their own leave balance, leave history, and leave applications.
+    # HR-authorized users may additionally manage all employee HR records.
+    # User-facing Odoo branding should use "PassionTech ERP" where customizable.
+    #
+    # Attendance is intentionally NOT route-blocked here. Model ACLs and
+    # record rules must enforce own-record access versus HR-wide access.
 
     @http.route(
         [
