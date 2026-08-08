@@ -3,5 +3,13 @@
     <function
         model="res.company"
         name="write"
-        eval="[[ref('base.main_company')], {'name': 'Passion Technology'}]"/>
+        eval="[[ref('base.main_company')], {
+            'name': 'Passion Technology',
+            'country_id': ref('base.et'),
+            'currency_id': ref('base.ETB')
+        }]"/>
+    <function
+        model="res.partner"
+        name="write"
+        eval="[[ref('base.main_partner')], {'tz': 'Africa/Addis_Ababa'}]"/>
 </odoo>

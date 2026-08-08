@@ -6,20 +6,18 @@ before starting Odoo.
 
 ## Reproducible installation
 
-Install these entry-point modules from the tracked `addons/` directory:
+Install this single bootstrap module from the tracked `addons/` directory:
 
 ```text
-passiontech_branding
-passiontech_core
-passiontech_security
-passiontech_financial_reports
+passiontech_erp
 ```
 
-Odoo resolves their tracked Community/OCA dependencies. For a production
-database, disable demo data explicitly (`--without-demo=True`) even though
-known vendored demo declarations are also disabled.
+Odoo resolves the complete approved PassionTech, Community, and vendored OCA
+dependency stack below. For a production database, disable demo data explicitly
+(`--without-demo=True`) even though known vendored demo declarations are also
+disabled.
 
-Install the approved business application set alongside the entry points:
+The bootstrap installs this approved business application set:
 
 ```text
 l10n_et, purchase_stock, stock_account, stock_landed_costs,

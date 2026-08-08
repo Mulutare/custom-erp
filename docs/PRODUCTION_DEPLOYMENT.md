@@ -67,8 +67,8 @@ used.
    ```sh
    docker compose --env-file deployment/env/.env.production \
      -f deployment/docker-compose.prod.yml run --rm odoo \
-     odoo -c /etc/odoo/odoo.conf --without-demo=all --stop-after-init \
-     -i passiontech_branding,passiontech_core,passiontech_security,passiontech_financial_reports,l10n_et,purchase_stock,stock_account,stock_landed_costs,product_expiry,stock_picking_batch,stock_dropshipping,sale_margin,sale_loyalty,sale_product_matrix,purchase_product_matrix,purchase_requisition,account_debit_note,account_check_printing,crm,delivery,account_asset_management,account_financial_report,account_reconcile_oca,account_statement_base,account_statement_import_base,account_statement_import_file,account_statement_import_file_reconcile_oca,account_statement_import_sheet_file,account_statement_import_sheet_file_xlsx
+     odoo -c /etc/odoo/odoo.conf --without-demo=True --stop-after-init \
+     -i passiontech_erp
    ```
 
    **B — migrate tested `office-db`:** create a final matching DB/filestore backup,
@@ -101,6 +101,9 @@ used.
 
 ## Bootstrap responsibility
 
+The coordinated Git/database/filestore artifact procedure is documented in
+`PRODUCTION_TEMPLATE.md`.
+
 Automatically reproduced: PassionTech roles/security, financial report templates,
 demo suppression, and tracked addons. Database-preserved on migration: companies,
 users, sequences, journals, warehouses, taxes, reconciliation models, and balances.
@@ -111,7 +114,7 @@ use numeric database IDs in automation.
 
 ## No demo data
 
-Always use `--without-demo=all`. Local manifests also intentionally disable demo
+Always use `--without-demo=True`. Local manifests also intentionally disable demo
 records in `account_reconcile_oca`, `account_statement_import_file`,
 `account_budget_oca`, and `report_xlsx`; this prevents sample reconciliation data,
 bank accounts, budgets, and report actions even if an operator misconfigures demo

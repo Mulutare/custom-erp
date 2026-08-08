@@ -236,8 +236,8 @@ Run the reviewed module set once, without demo data:
 
 ```sh
 sudo -u odoo /opt/odoo/venv/bin/python /opt/odoo/19.0/odoo-bin \
-  -c /etc/odoo/odoo.conf --without-demo=all --stop-after-init \
-  -i passiontech_branding,passiontech_core,passiontech_security,passiontech_financial_reports,l10n_et,purchase_stock,stock_account,stock_landed_costs,product_expiry,stock_picking_batch,stock_dropshipping,sale_margin,sale_loyalty,sale_product_matrix,purchase_product_matrix,purchase_requisition,account_debit_note,account_check_printing,crm,delivery,account_asset_management,account_financial_report,account_reconcile_oca,account_statement_base,account_statement_import_base,account_statement_import_file,account_statement_import_file_reconcile_oca,account_statement_import_sheet_file,account_statement_import_sheet_file_xlsx
+  -c /etc/odoo/odoo.conf --without-demo=True --stop-after-init \
+  -i passiontech_erp
 ```
 
 Manually configure the approved legal identity, Ethiopia/ETB chart, warehouse,
@@ -321,4 +321,3 @@ and outcome. A destructive production restore always requires separate approval.
 - Odoo 19 source installation: https://www.odoo.com/documentation/19.0/administration/on_premise/source.html
 - Odoo 19 on-premise deployment: https://www.odoo.com/documentation/19.0/administration/on_premise/deploy.html
 - Odoo 19 Python requirements: https://github.com/odoo/odoo/blob/19.0/requirements.txt
-
