@@ -2,9 +2,16 @@
 .env
 config/odoo.conf
 *.secret
+deployment/env/.env.production
+deployment/runtime/
+*.pem
+*.key
+*.crt
+*.p12
 
 # Database and backups
 backups/
+deployment/backups/
 *.sql
 *.dump
 *.backup

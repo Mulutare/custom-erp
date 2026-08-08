@@ -1,0 +1,11 @@
+# WHM/Apache include fragment; replace erp.example.com only after DNS/TLS setup.
+ProxyPreserveHost On
+ProxyRequests Off
+RequestHeader set X-Forwarded-Proto "https"
+
+ProxyPass        /websocket ws://127.0.0.1:8072/websocket timeout=600
+ProxyPassReverse /websocket ws://127.0.0.1:8072/websocket
+ProxyPass        / http://127.0.0.1:8069/ timeout=600
+ProxyPassReverse / http://127.0.0.1:8069/
+
+LimitRequestBody 134217728
