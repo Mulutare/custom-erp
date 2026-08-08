@@ -13,9 +13,10 @@ statements in HTML/PDF/XLSX. The PassionTech Finance Officer role receives
 only the two statement-use groups; its existing invoice-level ACL supplies
 wizard access without granting Accounting Manager privileges.
 
-The Cash Flow statement uses the explicit Operating Activities, Investing &
-Extraordinary Activities, and Financing Activities tags supplied by the
-Ethiopian chart of accounts. Accounts must retain one of these classifications
-to appear in the corresponding section. The report deliberately avoids
-account-code and account-type guesses, which keeps the classification visible
-and maintainable by Finance.
+The Cash Flow statement uses a reconciled indirect method. Net profit is
+adjusted for movements in non-cash operating assets and liabilities, investing
+assets, and financing balances. A separate cash-account movement line and a
+zero-required reconciliation line make classification or chart gaps visible
+instead of silently presenting an incorrect cash total. The formulas use Odoo
+account types rather than database IDs or account-code prefixes, preserving
+multi-company and Ethiopian chart compatibility.

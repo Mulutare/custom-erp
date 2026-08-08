@@ -88,6 +88,7 @@
         <field name="implied_ids"
                eval="[
                    (4, ref('account.group_account_invoice')),
+                   (4, ref('account.group_account_user')),
                    (4, ref('hr_expense.group_hr_expense_user'))
                ]"/>
     </record>
@@ -131,6 +132,7 @@
         <field name="implied_ids"
                eval="[
                    (4, ref('passiontech_security.group_access_administrator')),
+                   (4, ref('passiontech_security.group_company_owner')),
                    (4, ref('base.group_system'))
                ]"/>
     </record>
