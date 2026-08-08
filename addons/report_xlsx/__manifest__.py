@@ -11,7 +11,8 @@
     "license": "AGPL-3",
     "external_dependencies": {"python": ["xlsxwriter", "xlrd"]},
     "depends": ["base", "web"],
-    "demo": ["demo/report.xml"],
+    # PassionTech production packaging never creates sample report actions.
+    "demo": [],
     "installable": True,
     "assets": {
         "web.assets_backend": [

@@ -1,7 +1,7 @@
 {
     "name": "PassionTech Financial Reports",
     "summary": "Production financial statement templates for PassionTech ERP",
-    "version": "19.0.1.2.1",
+    "version": "19.0.1.3.0",
     "category": "Accounting/Accounting",
     "author": "Passion Technology",
     "website": "https://github.com/Mulutare/custom-erp",

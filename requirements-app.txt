@@ -1,0 +1,6 @@
+# External Python packages required by the vendored application addons.
+# Odoo Community's own image/runtime dependencies are intentionally excluded.
+openpyxl>=3.1,<4
+python-dateutil>=2.8,<3
+xlrd>=2.0,<3
+XlsxWriter>=3.1,<4

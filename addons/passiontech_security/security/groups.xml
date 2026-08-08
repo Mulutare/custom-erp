@@ -113,7 +113,8 @@
                eval="[
                    (4, ref('passiontech_security.group_sales_manager')),
                    (4, ref('passiontech_security.group_inventory_manager')),
-                   (4, ref('passiontech_security.group_finance_manager'))
+                   (4, ref('passiontech_security.group_finance_manager')),
+                   (4, ref('purchase.group_purchase_manager'))
                ]"/>
     </record>
 

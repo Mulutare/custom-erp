@@ -1,6 +1,6 @@
 {
     "name": "PassionTech Security",
-    "version": "19.0.1.25.0",
+    "version": "19.0.1.26.0",
     "summary": "Passion Technology company roles and access control",
     "category": "PassionTech",
     "author": "Passion Technology",
@@ -10,6 +10,7 @@
         "auth_signup",
         "hr_expense",
         "account_budget_oca",
+        "purchase_stock",
         "stock_landed_costs",
         "web"
     ],

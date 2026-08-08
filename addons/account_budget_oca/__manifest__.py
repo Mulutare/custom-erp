@@ -16,5 +16,6 @@
         "views/account_budget_views.xml",
         "views/res_config_settings_views.xml",
     ],
-    "demo": ["data/account_budget_demo.xml"],
+    # PassionTech production packaging never creates sample budgets.
+    "demo": [],
 }

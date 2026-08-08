@@ -1,6 +1,6 @@
 from odoo import Command, fields
 from odoo.exceptions import AccessError
-from odoo.tests import common, new_test_user, tagged
+from odoo.tests import Form, common, new_test_user, tagged
 
 
 @tagged("post_install", "-at_install")
@@ -341,3 +341,207 @@ class TestPassionTechSecurityMatrix(common.TransactionCase):
             finance_manager
         ).with_company(self.company).create(statement_values)
         self.assertTrue(statement_line.move_id)
+
+    def test_purchase_receipt_bill_payment_and_valuation_workflow(self):
+        owner = self.users["company_owner"]
+        inventory = self.users["inventory_officer"]
+        finance = self.users["finance_officer"]
+        finance_manager = self.users["finance_manager"]
+        self.assertTrue(owner.has_group("purchase.group_purchase_manager"))
+
+        vendor = self.env["res.partner"].create(
+            {"name": "PassionTech Controlled Workflow Vendor"}
+        )
+        product = self.env["product.product"].create(
+            {
+                "name": "PassionTech Controlled Purchased Product",
+                "is_storable": True,
+                "standard_price": 60.0,
+                "supplier_taxes_id": [Command.clear()],
+            }
+        )
+        purchase = (
+            self.env["purchase.order"]
+            .with_user(owner)
+            .with_company(self.company)
+            .create(
+                {
+                    "partner_id": vendor.id,
+                    "order_line": [
+                        Command.create(
+                            {
+                                "product_id": product.id,
+                                "product_qty": 2.0,
+                                "price_unit": 60.0,
+                            }
+                        )
+                    ],
+                }
+            )
+        )
+        purchase.button_confirm()
+        receipt = purchase.picking_ids.with_user(inventory)
+        receipt.action_assign()
+        receipt.move_ids.quantity = 2.0
+        receipt.with_context(
+            picking_ids_not_to_backorder=receipt.ids
+        ).button_validate()
+        self.assertEqual(receipt.state, "done")
+        self.assertTrue(all(receipt.move_ids.mapped("is_valued")))
+        self.assertAlmostEqual(sum(receipt.move_ids.mapped("value")), 120.0)
+
+        bill = (
+            self.env["account.move"]
+            .with_user(finance)
+            .with_company(self.company)
+            .create(
+                {
+                    "move_type": "in_invoice",
+                    "partner_id": vendor.id,
+                    "invoice_date": fields.Date.today(),
+                    "invoice_line_ids": [
+                        Command.create(
+                            {
+                                "product_id": product.id,
+                                "quantity": 2.0,
+                                "price_unit": 60.0,
+                                "tax_ids": [Command.clear()],
+                            }
+                        )
+                    ],
+                }
+            )
+        )
+        with self.assertRaises(AccessError):
+            bill.with_user(finance).action_post()
+        bill.with_user(finance_manager).action_post()
+
+        bank_journal = self.env["account.journal"].search(
+            [("company_id", "=", self.company.id), ("type", "=", "bank")],
+            limit=1,
+        )
+        payment = (
+            self.env["account.payment"]
+            .with_user(finance)
+            .with_company(self.company)
+            .create(
+                {
+                    "payment_type": "outbound",
+                    "partner_type": "supplier",
+                    "partner_id": vendor.id,
+                    "amount": bill.amount_total,
+                    "date": fields.Date.today(),
+                    "journal_id": bank_journal.id,
+                }
+            )
+        )
+        payment.with_user(finance_manager).action_post()
+        payable_lines = (bill.line_ids + payment.move_id.line_ids).filtered(
+            lambda line: line.account_id.account_type == "liability_payable"
+        )
+        payable_lines.with_user(finance).reconcile()
+        self.assertEqual(bill.payment_state, "paid")
+
+    def test_return_credit_note_stock_and_accounting_correction(self):
+        sales = self.users["sales_officer"]
+        inventory = self.users["inventory_officer"]
+        finance = self.users["finance_officer"]
+        finance_manager = self.users["finance_manager"]
+        partner = self.env["res.partner"].create(
+            {"name": "PassionTech Controlled Return Customer"}
+        )
+        product = self.env["product.product"].create(
+            {
+                "name": "PassionTech Controlled Return Product",
+                "is_storable": True,
+                "invoice_policy": "delivery",
+                "list_price": 100.0,
+                "standard_price": 60.0,
+                "taxes_id": [Command.clear()],
+            }
+        )
+        warehouse = self.env["stock.warehouse"].search(
+            [("company_id", "=", self.company.id)], limit=1
+        )
+        self.env["stock.quant"]._update_available_quantity(
+            product, warehouse.lot_stock_id, 1.0
+        )
+        order = (
+            self.env["sale.order"]
+            .with_user(sales)
+            .with_company(self.company)
+            .create(
+                {
+                    "partner_id": partner.id,
+                    "warehouse_id": warehouse.id,
+                    "order_line": [
+                        Command.create(
+                            {"product_id": product.id, "product_uom_qty": 1.0}
+                        )
+                    ],
+                }
+            )
+        )
+        order.action_confirm()
+        delivery = order.picking_ids.with_user(inventory)
+        delivery.action_assign()
+        delivery.move_ids.quantity = 1.0
+        delivery.with_context(
+            picking_ids_not_to_backorder=delivery.ids
+        ).button_validate()
+
+        invoice_wizard = (
+            self.env["sale.advance.payment.inv"]
+            .with_user(finance)
+            .with_company(self.company)
+            .with_context(active_model="sale.order", active_ids=order.ids)
+            .create({"advance_payment_method": "delivered"})
+        )
+        invoice_wizard.create_invoices()
+        invoice = order.invoice_ids
+        invoice.with_user(finance_manager).action_post()
+
+        return_form = Form(
+            self.env["stock.return.picking"]
+            .with_user(inventory)
+            .with_context(
+                active_ids=delivery.ids,
+                active_id=delivery.id,
+                active_model="stock.picking",
+            )
+        )
+        return_wizard = return_form.save()
+        return_wizard.product_return_moves.quantity = 1.0
+        return_action = return_wizard.action_create_returns()
+        return_picking = self.env["stock.picking"].browse(return_action["res_id"])
+        return_picking = return_picking.with_user(inventory)
+        return_picking.action_assign()
+        return_picking.move_ids.quantity = 1.0
+        return_picking.with_context(
+            picking_ids_not_to_backorder=return_picking.ids
+        ).button_validate()
+        self.assertEqual(return_picking.state, "done")
+        self.assertEqual(
+            product.with_company(self.company).qty_available,
+            1.0,
+        )
+
+        reversal = (
+            self.env["account.move.reversal"]
+            .with_user(finance_manager)
+            .with_company(self.company)
+            .with_context(active_model="account.move", active_ids=invoice.ids)
+            .create(
+                {
+                    "date": fields.Date.today(),
+                    "journal_id": invoice.journal_id.id,
+                    "reason": "Controlled product return",
+                }
+            )
+        )
+        action = reversal.refund_moves()
+        credit_note = self.env["account.move"].browse(action["res_id"])
+        credit_note.with_user(finance_manager).action_post()
+        self.assertEqual(credit_note.move_type, "out_refund")
+        self.assertEqual(credit_note.state, "posted")
+        self.assertEqual(credit_note.amount_total, invoice.amount_total)

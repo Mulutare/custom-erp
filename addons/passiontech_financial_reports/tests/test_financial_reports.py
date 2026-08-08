@@ -84,6 +84,8 @@ class TestPassionTechFinancialReports(common.TransactionCase):
     def test_cash_flow_reconciles_to_cash_accounts(self):
         report = self.env.ref("passiontech_financial_reports.report_cash_flow")
         self.assertIn("cash_account_movement", report.kpi_ids.mapped("name"))
+        self.assertIn("opening_cash", report.kpi_ids.mapped("name"))
+        self.assertIn("closing_cash", report.kpi_ids.mapped("name"))
         self.assertIn("cash_flow_reconciliation", report.kpi_ids.mapped("name"))
 
     def test_controlled_financial_statement_values(self):
@@ -170,6 +172,8 @@ class TestPassionTechFinancialReports(common.TransactionCase):
         self.assertAlmostEqual(value(cash_flow, "financing_cash_flow"), 25.0)
         self.assertAlmostEqual(value(cash_flow, "net_cash_flow"), 85.0)
         self.assertAlmostEqual(value(cash_flow, "cash_account_movement"), 85.0)
+        self.assertAlmostEqual(value(cash_flow, "opening_cash") or 0.0, 0.0)
+        self.assertAlmostEqual(value(cash_flow, "closing_cash"), 85.0)
         self.assertAlmostEqual(value(cash_flow, "cash_flow_reconciliation"), 0.0)
 
         balance_sheet = evaluate(

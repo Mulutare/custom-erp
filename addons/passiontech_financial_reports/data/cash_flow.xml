@@ -88,13 +88,36 @@
         <field name="name">balp[('account_type', '=', 'asset_cash')]</field>
     </record>
 
+    <record id="kpi_opening_cash" model="mis.report.kpi">
+        <field name="report_id" ref="report_cash_flow" />
+        <field name="name">opening_cash</field>
+        <field name="description">Opening Cash and Cash Equivalents</field>
+        <field name="sequence">80</field>
+    </record>
+    <record id="expr_opening_cash" model="mis.report.kpi.expression">
+        <field name="kpi_id" ref="kpi_opening_cash" />
+        <field name="name">bali[('account_type', '=', 'asset_cash')]</field>
+    </record>
+
+    <record id="kpi_closing_cash" model="mis.report.kpi">
+        <field name="report_id" ref="report_cash_flow" />
+        <field name="name">closing_cash</field>
+        <field name="description">Closing Cash and Cash Equivalents</field>
+        <field name="style_id" ref="style_total" />
+        <field name="sequence">90</field>
+    </record>
+    <record id="expr_closing_cash" model="mis.report.kpi.expression">
+        <field name="kpi_id" ref="kpi_closing_cash" />
+        <field name="name">bale[('account_type', '=', 'asset_cash')]</field>
+    </record>
+
     <record id="kpi_cash_flow_reconciliation" model="mis.report.kpi">
         <field name="report_id" ref="report_cash_flow" />
         <field name="name">cash_flow_reconciliation</field>
         <field name="description">Cash Movement Reconciliation (must be zero)</field>
-        <field name="expression">net_cash_flow - cash_account_movement</field>
+        <field name="expression">opening_cash + net_cash_flow - closing_cash</field>
         <field name="style_id" ref="style_section" />
-        <field name="sequence">80</field>
+        <field name="sequence">100</field>
     </record>
 
     <record id="instance_cash_flow" model="mis.report.instance">

@@ -22,10 +22,11 @@ class ResGroups(models.Model):
             "stock.group_stock_manager",
         ]
 
-        manager_groups = self.env["res.groups"].browse([
-            self.env.ref(xml_id).id
+        manager_groups = self.env["res.groups"].browse(
+            group.id
             for xml_id in manager_group_xml_ids
-        ])
+            if (group := self.env.ref(xml_id, raise_if_not_found=False))
+        )
 
         default_group.sudo().write({
             "implied_ids": [
