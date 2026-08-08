@@ -10,6 +10,7 @@
         "auth_signup",
         "hr_expense",
         "account_budget_oca",
+        "account_financial_report",
         "purchase_stock",
         "stock_landed_costs",
         "web"

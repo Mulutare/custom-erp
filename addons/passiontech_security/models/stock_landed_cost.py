@@ -13,6 +13,7 @@ class StockLandedCost(models.Model):
             or self.env.user.has_group(
                 "passiontech_security.group_finance_manager"
             )
+            or self.env.user.has_group("base.group_system")
             or self.env.user.has_group(
                 "passiontech_security.group_system_administrator"
             )

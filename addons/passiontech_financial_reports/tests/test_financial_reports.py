@@ -12,7 +12,8 @@ class TestPassionTechFinancialReports(common.TransactionCase):
             [("name", "=", "Passion Technology")], limit=1
         )
         if not cls.company:
-            raise AssertionError("Passion Technology company is not configured")
+            cls.company = cls.env.company
+            cls.company.name = "Passion Technology"
         cls.finance_officer = new_test_user(
             cls.env,
             login="pt_finance_officer_reports_test",
@@ -187,7 +188,9 @@ class TestPassionTechFinancialReports(common.TransactionCase):
                 "partner_statement.group_outstanding_statement"
             )
         )
-        partner = self.env.ref("base.res_partner_2")
+        partner = self.env["res.partner"].create(
+            {"name": "PassionTech Statement Test Partner"}
+        )
         wizard = (
             self.env["outstanding.statement.wizard"]
             .with_user(self.finance_officer)
@@ -197,6 +200,28 @@ class TestPassionTechFinancialReports(common.TransactionCase):
         )
         action = wizard.button_export_html()
         self.assertEqual(action["type"], "ir.actions.report")
+
+    def test_mis_financial_data_is_finance_only(self):
+        sales_user = new_test_user(
+            self.env,
+            login="pt_sales_mis_denial_test",
+            groups="passiontech_security.group_sales_officer",
+            company_id=self.company.id,
+        )
+        instance = self.env.ref(
+            "passiontech_financial_reports.instance_profit_and_loss"
+        )
+        report = instance.report_id
+        with self.assertRaises(AccessError):
+            instance.with_user(sales_user).print_pdf()
+        with self.assertRaises(AccessError):
+            report.with_user(sales_user).evaluate(
+                report.with_user(sales_user)._prepare_aep(self.company),
+                date_from="2026-01-01",
+                date_to="2026-12-31",
+            )
+
+        self.assertTrue(instance.with_user(self.finance_officer).print_pdf())
 
     def test_journal_lock_and_posting_roles(self):
         journal = self.env["account.journal"].search(

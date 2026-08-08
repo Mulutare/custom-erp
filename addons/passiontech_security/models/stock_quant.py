@@ -10,6 +10,7 @@ class StockQuant(models.Model):
             self.env.user.has_group(
                 "passiontech_security.group_inventory_manager"
             )
+            or self.env.user.has_group("base.group_system")
             or self.env.user.has_group(
                 "passiontech_security.group_system_administrator"
             )

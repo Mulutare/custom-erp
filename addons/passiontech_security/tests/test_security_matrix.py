@@ -1,5 +1,5 @@
 from odoo import Command, fields
-from odoo.exceptions import AccessError
+from odoo.exceptions import AccessError, UserError
 from odoo.tests import Form, common, new_test_user, tagged
 
 
@@ -12,7 +12,8 @@ class TestPassionTechSecurityMatrix(common.TransactionCase):
             [("name", "=", "Passion Technology")], limit=1
         )
         if not cls.company:
-            raise AssertionError("Passion Technology company is not configured")
+            cls.company = cls.env.company
+            cls.company.name = "Passion Technology"
 
         roles = {
             "sales_officer": "passiontech_security.group_sales_officer",
@@ -172,6 +173,39 @@ class TestPassionTechSecurityMatrix(common.TransactionCase):
                 self.users[role]
             )._passiontech_check_budget_access()
 
+    def test_oca_financial_report_rpc_is_finance_only(self):
+        wizard_model = self.env["general.ledger.report.wizard"]
+        for role in (
+            "sales_officer",
+            "sales_manager",
+            "inventory_officer",
+            "inventory_manager",
+            "access_admin",
+        ):
+            with self.assertRaises(AccessError):
+                wizard_model.with_user(self.users[role]).create({})
+
+        wizard = wizard_model.with_user(self.users["finance_officer"]).create({})
+        self.assertTrue(wizard)
+
+    def test_aged_report_configuration_is_finance_manager_only(self):
+        values = {
+            "name": "Audit ageing intervals",
+            "line_ids": [
+                Command.create({"name": "30 days", "inferior_limit": 30})
+            ],
+        }
+        for role in ("sales_manager", "inventory_manager", "finance_officer"):
+            with self.assertRaises(AccessError):
+                self.env["account.age.report.configuration"].with_user(
+                    self.users[role]
+                ).create(values)
+
+        configuration = self.env["account.age.report.configuration"].with_user(
+            self.users["finance_manager"]
+        ).create(values)
+        self.assertTrue(configuration)
+
     def test_finance_posting_and_operational_accounting(self):
         officer = self.users["finance_officer"]
         manager = self.users["finance_manager"]
@@ -222,6 +256,19 @@ class TestPassionTechSecurityMatrix(common.TransactionCase):
             users_model = self.env["res.users"].with_user(self.users[role])
             self.assertTrue(users_model.has_access("write"))
             self.assertTrue(users_model.has_access("create"))
+
+    def test_builtin_technical_admin_has_full_server_authority(self):
+        self.assertTrue(self.env.user.has_group("base.group_system"))
+        self.env["account.move"]._passiontech_check_posting_access()
+        self.env[
+            "sale.advance.payment.inv"
+        ]._passiontech_check_invoice_creation_access()
+        self.env[
+            "crossovered.budget.lines"
+        ]._passiontech_check_budget_access()
+        self.env[
+            "general.ledger.report.wizard"
+        ]._passiontech_check_financial_report_access()
 
     def test_sales_delivery_invoice_payment_reconciliation_workflow(self):
         sales = self.users["sales_officer"]
@@ -341,6 +388,163 @@ class TestPassionTechSecurityMatrix(common.TransactionCase):
             finance_manager
         ).with_company(self.company).create(statement_values)
         self.assertTrue(statement_line.move_id)
+
+    def test_partial_delivery_backorder_and_duplicate_actions(self):
+        sales = self.users["sales_officer"]
+        inventory = self.users["inventory_officer"]
+        finance = self.users["finance_officer"]
+        partner = self.env["res.partner"].create(
+            {"name": "PassionTech Backorder Test Customer"}
+        )
+        product = self.env["product.product"].create(
+            {
+                "name": "PassionTech Backorder Test Product",
+                "is_storable": True,
+                "invoice_policy": "delivery",
+                "list_price": 100.0,
+                "standard_price": 60.0,
+                "taxes_id": [Command.clear()],
+            }
+        )
+        warehouse = self.env["stock.warehouse"].search(
+            [("company_id", "=", self.company.id)], limit=1
+        )
+        self.env["stock.quant"]._update_available_quantity(
+            product, warehouse.lot_stock_id, 10.0
+        )
+        order = (
+            self.env["sale.order"]
+            .with_user(sales)
+            .with_company(self.company)
+            .create(
+                {
+                    "partner_id": partner.id,
+                    "warehouse_id": warehouse.id,
+                    "order_line": [
+                        Command.create(
+                            {"product_id": product.id, "product_uom_qty": 10.0}
+                        )
+                    ],
+                }
+            )
+        )
+        order.action_confirm()
+        picking_count = len(order.picking_ids)
+        with self.assertRaises(UserError):
+            order.action_confirm()
+        self.assertEqual(len(order.picking_ids), picking_count)
+
+        delivery = order.picking_ids.with_user(inventory)
+        delivery.action_assign()
+        delivery.move_ids.quantity = 6.0
+        backorder_action = delivery.button_validate()
+        self.assertEqual(
+            backorder_action["res_model"], "stock.backorder.confirmation"
+        )
+        with Form(
+            self.env["stock.backorder.confirmation"]
+            .with_user(inventory)
+            .with_context(backorder_action["context"])
+        ) as backorder_form:
+            backorder_wizard = backorder_form.save()
+        backorder_wizard.process()
+        self.assertEqual(delivery.state, "done")
+        self.assertAlmostEqual(sum(delivery.move_ids.mapped("quantity")), 6.0)
+
+        backorder = self.env["stock.picking"].search(
+            [("backorder_id", "=", delivery.id)]
+        )
+        self.assertEqual(len(backorder), 1)
+        self.assertAlmostEqual(sum(backorder.move_ids.mapped("product_uom_qty")), 4.0)
+        self.assertAlmostEqual(order.order_line.qty_delivered, 6.0)
+        self.assertEqual(order.invoice_status, "to invoice")
+
+        wizard = (
+            self.env["sale.advance.payment.inv"]
+            .with_user(finance)
+            .with_company(self.company)
+            .with_context(active_model="sale.order", active_ids=order.ids)
+            .create({"advance_payment_method": "delivered"})
+        )
+        wizard.create_invoices()
+        self.assertEqual(len(order.invoice_ids), 1)
+        self.assertAlmostEqual(order.invoice_ids.invoice_line_ids.quantity, 6.0)
+
+        backorder = backorder.with_user(inventory)
+        backorder.action_assign()
+        backorder.move_ids.quantity = 4.0
+        backorder.button_validate()
+        backorder.button_validate()
+        self.assertEqual(backorder.state, "done")
+        self.assertAlmostEqual(order.order_line.qty_delivered, 10.0)
+        self.assertFalse(
+            self.env["stock.picking"].search_count(
+                [("backorder_id", "=", backorder.id)]
+            )
+        )
+        self.assertAlmostEqual(
+            self.env["stock.quant"]._get_available_quantity(
+                product, warehouse.lot_stock_id
+            ),
+            0.0,
+        )
+
+    def test_cross_company_operational_records_are_isolated(self):
+        other_company = self.env["res.company"].create(
+            {"name": "PassionTech Isolated Test Company"}
+        )
+        other_partner = self.env["res.partner"].create(
+            {
+                "name": "PassionTech Isolated Customer",
+                "company_id": other_company.id,
+            }
+        )
+        other_warehouse = self.env["stock.warehouse"].search(
+            [("company_id", "=", other_company.id)], limit=1
+        )
+        self.assertTrue(other_warehouse)
+        other_order = self.env["sale.order"].with_company(other_company).create(
+            {
+                "partner_id": other_partner.id,
+                "company_id": other_company.id,
+                "warehouse_id": other_warehouse.id,
+            }
+        )
+        other_budget = self.env["crossovered.budget"].with_company(
+            other_company
+        ).create(
+            {
+                "name": "Isolated budget",
+                "date_from": fields.Date.today().replace(month=1, day=1),
+                "date_to": fields.Date.today().replace(month=12, day=31),
+                "company_id": other_company.id,
+            }
+        )
+
+        for role in ("sales_officer", "inventory_officer", "finance_officer"):
+            user = self.users[role]
+            self.assertNotIn(other_company, user.company_ids)
+            self.assertFalse(
+                self.env["sale.order"].with_user(user).search_count(
+                    [("id", "=", other_order.id)]
+                )
+            )
+            self.assertFalse(
+                self.env["stock.warehouse"].with_user(user).search_count(
+                    [("id", "=", other_warehouse.id)]
+                )
+            )
+            if role == "finance_officer":
+                self.assertFalse(
+                    self.env["crossovered.budget"].with_user(user).search_count(
+                        [("id", "=", other_budget.id)]
+                    )
+                )
+            else:
+                with self.assertRaises(AccessError):
+                    self.env["crossovered.budget"].with_user(user).search_count(
+                        [("id", "=", other_budget.id)]
+                    )
 
     def test_purchase_receipt_bill_payment_and_valuation_workflow(self):
         owner = self.users["company_owner"]

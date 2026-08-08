@@ -16,6 +16,7 @@ class SaleAdvancePaymentInv(models.TransientModel):
             user.has_group(
                 "passiontech_security.group_finance_officer"
             )
+            or user.has_group("base.group_system")
             or user.has_group(
                 "passiontech_security.group_system_administrator"
             )

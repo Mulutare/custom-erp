@@ -16,6 +16,7 @@ class AccountMove(models.Model):
             user.has_group(
                 "passiontech_security.group_finance_manager"
             )
+            or user.has_group("base.group_system")
             or user.has_group(
                 "passiontech_security.group_system_administrator"
             )
