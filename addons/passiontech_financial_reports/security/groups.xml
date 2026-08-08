@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="passiontech_security.group_finance_officer" model="res.groups">
+        <field
+            name="implied_ids"
+            eval="[
+                Command.link(ref('partner_statement.group_activity_statement')),
+                Command.link(ref('partner_statement.group_outstanding_statement')),
+            ]"
+        />
+    </record>
+</odoo>
