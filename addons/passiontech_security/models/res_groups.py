@@ -14,6 +14,7 @@ class ResGroups(models.Model):
             "account.group_account_manager",
             "hr.group_hr_manager",
             "hr_attendance.group_hr_attendance_manager",
+            "hr_expense.group_hr_expense_manager",
             "product.group_product_manager",
             "project.group_project_manager",
             "purchase.group_purchase_manager",

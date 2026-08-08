@@ -30,6 +30,7 @@ class TestPassionTechFinancialReports(common.TransactionCase):
         expected = {
             "passiontech_financial_reports.report_profit_and_loss": "net_profit",
             "passiontech_financial_reports.report_balance_sheet": "balance_check",
+            "passiontech_financial_reports.report_cash_flow": "net_cash_flow",
         }
         for xmlid, final_kpi in expected.items():
             report = self.env.ref(xmlid)
@@ -46,10 +47,31 @@ class TestPassionTechFinancialReports(common.TransactionCase):
         for xmlid in (
             "passiontech_financial_reports.instance_profit_and_loss",
             "passiontech_financial_reports.instance_balance_sheet",
+            "passiontech_financial_reports.instance_cash_flow",
         ):
             instance = self.env.ref(xmlid)
             self.assertEqual(instance.target_move, "posted")
             self.assertEqual(len(instance.period_ids), 2)
+
+    def test_cash_flow_uses_chart_classification_tags(self):
+        report = self.env.ref("passiontech_financial_reports.report_cash_flow")
+        expressions = report.kpi_ids.expression_ids.mapped("name")
+        for tag_name in (
+            "Operating Activities",
+            "Investing & Extraordinary Activities",
+            "Financing Activities",
+        ):
+            self.assertTrue(any(tag_name in expression for expression in expressions))
+            tag = self.env["account.account.tag"].search(
+                [("name", "=", tag_name)], limit=1
+            )
+            self.assertTrue(tag, f"Missing cash-flow account tag: {tag_name}")
+            classified_accounts = self.env["account.account"].search_count(
+                [("tag_ids", "in", tag.ids)]
+            )
+            self.assertTrue(
+                classified_accounts, f"No accounts classified as: {tag_name}"
+            )
 
     def test_finance_officer_can_open_partner_statement(self):
         self.assertTrue(

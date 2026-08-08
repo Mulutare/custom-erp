@@ -13,7 +13,9 @@ statements in HTML/PDF/XLSX. The PassionTech Finance Officer role receives
 only the two statement-use groups; its existing invoice-level ACL supplies
 wizard access without granting Accounting Manager privileges.
 
-Cash Flow is intentionally not defined yet. Reliable operating, investing,
-and financing sections require explicit account tags or groups in the
-Ethiopian chart. A generic account-type-only template could silently
-misclassify movements, so this remains a documented configuration gap.
+The Cash Flow statement uses the explicit Operating Activities, Investing &
+Extraordinary Activities, and Financing Activities tags supplied by the
+Ethiopian chart of accounts. Accounts must retain one of these classifications
+to appear in the corresponding section. The report deliberately avoids
+account-code and account-type guesses, which keeps the classification visible
+and maintainable by Finance.

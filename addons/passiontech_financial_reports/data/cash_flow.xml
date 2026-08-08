@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="report_cash_flow" model="mis.report">
+        <field name="name">PassionTech Cash Flow</field>
+        <field name="description">Cash movements classified by the Ethiopian chart's cash-flow tags.</field>
+        <field name="style_id" ref="style_statement" />
+    </record>
+
+    <record id="kpi_operating_cash_flow" model="mis.report.kpi">
+        <field name="report_id" ref="report_cash_flow" />
+        <field name="name">operating_cash_flow</field>
+        <field name="description">Cash Flow from Operating Activities</field>
+        <field name="auto_expand_accounts" eval="True" />
+        <field name="auto_expand_accounts_style_id" ref="style_detail" />
+        <field name="style_id" ref="style_section" />
+        <field name="sequence">10</field>
+    </record>
+    <record id="expr_operating_cash_flow" model="mis.report.kpi.expression">
+        <field name="kpi_id" ref="kpi_operating_cash_flow" />
+        <field name="name">balp[('tag_ids.name', '=', 'Operating Activities')]</field>
+    </record>
+
+    <record id="kpi_investing_cash_flow" model="mis.report.kpi">
+        <field name="report_id" ref="report_cash_flow" />
+        <field name="name">investing_cash_flow</field>
+        <field name="description">Cash Flow from Investing &amp; Extraordinary Activities</field>
+        <field name="auto_expand_accounts" eval="True" />
+        <field name="auto_expand_accounts_style_id" ref="style_detail" />
+        <field name="style_id" ref="style_section" />
+        <field name="sequence">20</field>
+    </record>
+    <record id="expr_investing_cash_flow" model="mis.report.kpi.expression">
+        <field name="kpi_id" ref="kpi_investing_cash_flow" />
+        <field name="name">balp[('tag_ids.name', '=', 'Investing &amp; Extraordinary Activities')]</field>
+    </record>
+
+    <record id="kpi_financing_cash_flow" model="mis.report.kpi">
+        <field name="report_id" ref="report_cash_flow" />
+        <field name="name">financing_cash_flow</field>
+        <field name="description">Cash Flow from Financing Activities</field>
+        <field name="auto_expand_accounts" eval="True" />
+        <field name="auto_expand_accounts_style_id" ref="style_detail" />
+        <field name="style_id" ref="style_section" />
+        <field name="sequence">30</field>
+    </record>
+    <record id="expr_financing_cash_flow" model="mis.report.kpi.expression">
+        <field name="kpi_id" ref="kpi_financing_cash_flow" />
+        <field name="name">balp[('tag_ids.name', '=', 'Financing Activities')]</field>
+    </record>
+
+    <record id="kpi_net_cash_flow" model="mis.report.kpi">
+        <field name="report_id" ref="report_cash_flow" />
+        <field name="name">net_cash_flow</field>
+        <field name="description">Net Increase / (Decrease) in Cash</field>
+        <field name="expression">operating_cash_flow + investing_cash_flow + financing_cash_flow</field>
+        <field name="style_id" ref="style_total" />
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="instance_cash_flow" model="mis.report.instance">
+        <field name="name">PassionTech Cash Flow</field>
+        <field name="report_id" ref="report_cash_flow" />
+        <field name="target_move">posted</field>
+        <field name="comparison_mode" eval="True" />
+    </record>
+    <record id="period_cash_flow_current" model="mis.report.instance.period">
+        <field name="name">Current Year</field>
+        <field name="report_instance_id" ref="instance_cash_flow" />
+        <field name="source">actuals</field>
+        <field name="mode">relative</field>
+        <field name="type">y</field>
+        <field name="offset">0</field>
+        <field name="duration">1</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="period_cash_flow_previous" model="mis.report.instance.period">
+        <field name="name">Previous Year</field>
+        <field name="report_instance_id" ref="instance_cash_flow" />
+        <field name="source">actuals</field>
+        <field name="mode">relative</field>
+        <field name="type">y</field>
+        <field name="offset">-1</field>
+        <field name="duration">1</field>
+        <field name="sequence">20</field>
+    </record>
+</odoo>
