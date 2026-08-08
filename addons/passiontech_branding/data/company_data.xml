@@ -1,5 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <function
+        model="ir.config_parameter"
+        name="set_param"
+        eval="['web.web_app_name', 'PassionTech ERP']"/>
+
     <function
         model="res.company"
         name="write"
@@ -8,6 +13,7 @@
             'country_id': ref('base.et'),
             'currency_id': ref('base.ETB')
         }]"/>
+
     <function
         model="res.partner"
         name="write"
