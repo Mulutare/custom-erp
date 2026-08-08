@@ -1,12 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template
+        id="passiontech_web_layout"
+        inherit_id="web.layout"
+        name="PassionTech Web Layout Branding">
+        <xpath expr="//title" position="replace">
+            <title t-esc="title or 'PassionTech ERP'"/>
+        </xpath>
+        <xpath expr="//link[@rel='shortcut icon']" position="replace">
+            <link
+                type="image/png"
+                rel="shortcut icon"
+                href="/passiontech_branding/static/src/img/passiontech-logo.png"/>
+        </xpath>
+    </template>
+
+    <template
         id="passiontech_login_branding"
         inherit_id="web.login_layout"
         name="PassionTech Login Branding">
 
         <xpath
-            expr="//div[contains(@t-attf-class, 'o_database_list')]"
+            expr="//div[@t-attf-class]"
             position="attributes">
             <attribute name="style">max-width: 420px;</attribute>
         </xpath>
@@ -16,8 +31,15 @@
             position="replace">
             <img
                 src="/passiontech_branding/static/src/img/passiontech-logo.png"
-                alt="Passion Technology"
+                alt="PassionTech ERP"
                 style="max-height: 180px; max-width: 100%; width: auto;"/>
+            <h1 class="h4 mt-3 mb-0">PassionTech ERP</h1>
+        </xpath>
+
+        <xpath
+            expr="//div[hasclass('border-top')]/a[contains(@href, 'odoo.com')]"
+            position="replace">
+            <span class="text-muted">PassionTech ERP</span>
         </xpath>
 
     </template>

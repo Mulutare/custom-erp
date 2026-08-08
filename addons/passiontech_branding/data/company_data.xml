@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function
+        model="res.company"
+        name="write"
+        eval="[[ref('base.main_company')], {'name': 'Passion Technology'}]"/>
+</odoo>

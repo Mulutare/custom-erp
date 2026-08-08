@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t
+        t-name="passiontech_branding.NavBar"
+        t-inherit="web.NavBar"
+        t-inherit-mode="extension">
+        <xpath expr="//t[@t-call='web.NavBar.AppsMenu']" position="before">
+            <a
+                class="o_passiontech_brand d-none d-md-flex align-items-center"
+                href="/odoo"
+                title="PassionTech ERP"
+                aria-label="PassionTech ERP home">
+                <img
+                    src="/passiontech_branding/static/src/img/passiontech-logo.png"
+                    alt="PassionTech ERP"/>
+                <span>PassionTech ERP</span>
+            </a>
+        </xpath>
+    </t>
+
+    <t
+        t-name="passiontech_branding.LoadingIndicator"
+        t-inherit="web.LoadingIndicator"
+        t-inherit-mode="extension">
+        <xpath expr="//span[hasclass('o_loading_indicator')]" position="replace">
+            <span
+                class="o_loading_indicator"
+                t-att-class="transition.className">
+                PassionTech ERP is loading<t
+                    t-if="env.debug"
+                    t-esc="' (' + state.count + ')'"/>
+            </span>
+        </xpath>
+    </t>
+</templates>
