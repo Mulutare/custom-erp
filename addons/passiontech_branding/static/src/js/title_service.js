@@ -1,8 +1,20 @@
 /** @odoo-module **/
 
-import {registry} from "@web/core/registry";
+import { registry } from "@web/core/registry";
 
 const BRAND_NAME = "PassionTech ERP";
+
+function sanitizeTitlePart(value) {
+    if (!value) {
+        return "";
+    }
+
+    return String(value)
+        .trim()
+        .replace(/^Odoo(?:\s*[-|]\s*)?/i, "")
+        .replace(/\s*[-|]\s*Odoo$/i, "")
+        .trim();
+}
 
 export const passionTechTitleService = {
     start() {
@@ -10,7 +22,7 @@ export const passionTechTitleService = {
         const titleParts = {};
 
         function getParts() {
-            return {...titleParts};
+            return { ...titleParts };
         }
 
         function updateTitle() {
@@ -18,9 +30,20 @@ export const passionTechTitleService = {
                 (total, count) => total + count,
                 0
             );
-            const context = Object.values(titleParts).filter(Boolean).join(" - ");
-            const name = context ? `${context} | ${BRAND_NAME}` : BRAND_NAME;
-            document.title = counter ? `(${counter}) ${name}` : name;
+
+            const parts = Object.values(titleParts)
+                .map(sanitizeTitlePart)
+                .filter(Boolean);
+
+            const context = [...new Set(parts)].join(" - ");
+
+            const name = context
+                ? `${context} | ${BRAND_NAME}`
+                : BRAND_NAME;
+
+            document.title = counter
+                ? `(${counter}) ${name}`
+                : name;
         }
 
         function setCounters(counters) {
@@ -46,6 +69,7 @@ export const passionTechTitleService = {
         }
 
         updateTitle();
+
         return {
             get current() {
                 return document.title;
@@ -57,4 +81,6 @@ export const passionTechTitleService = {
     },
 };
 
-registry.category("services").add("title", passionTechTitleService, {force: true});
+registry.category("services").add("title", passionTechTitleService, {
+    force: true,
+});
